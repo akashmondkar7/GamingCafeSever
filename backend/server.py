@@ -438,31 +438,54 @@ async def ai_chat(message_data: AIMessage, current_user: dict = Depends(get_curr
 async def get_dashboard_analytics(current_user: dict = Depends(get_current_user)):
     """Get dashboard analytics"""
     if current_user['role'] == 'CAFE_OWNER':
-        cafes = await db.cafes.find({"owner_id": current_user['user_id']}, {"_id": 0}).to_list(100)
+        cafes = await db.cafes.find({"owner_id": current_user['user_id']}, {"_id": 0, "id": 1}).limit(100).to_list(100)
         cafe_ids = [c['id'] for c in cafes]
     elif current_user['role'] == 'SUPER_ADMIN':
-        cafes = await db.cafes.find({}, {"_id": 0}).to_list(1000)
+        cafes = await db.cafes.find({}, {"_id": 0, "id": 1}).limit(1000).to_list(1000)
         cafe_ids = [c['id'] for c in cafes]
     else:
         raise HTTPException(status_code=403, detail="Access denied")
     
-    # Get metrics
+    # Use aggregations for efficient metrics
     total_devices = await db.devices.count_documents({"cafe_id": {"$in": cafe_ids}})
     active_sessions = await db.sessions.count_documents({
         "cafe_id": {"$in": cafe_ids},
         "status": "ACTIVE"
     })
     
-    sessions = await db.sessions.find({"cafe_id": {"$in": cafe_ids}}, {"_id": 0}).to_list(10000)
+    # Get revenue using aggregation instead of fetching all documents
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     
-    today = datetime.now(timezone.utc).date()
-    today_revenue = sum(
-        s.get('total_amount', 0) for s in sessions
-        if s.get('status') == 'COMPLETED' and
-        datetime.fromisoformat(s['created_at']).date() == today
-    )
+    # Today's revenue
+    today_revenue_pipeline = [
+        {"$match": {
+            "cafe_id": {"$in": cafe_ids},
+            "status": "COMPLETED",
+            "created_at": {"$gte": today.isoformat()}
+        }},
+        {"$group": {
+            "_id": None,
+            "total": {"$sum": "$total_amount"}
+        }}
+    ]
     
-    total_revenue = sum(s.get('total_amount', 0) for s in sessions if s.get('status') == 'COMPLETED')
+    today_result = await db.sessions.aggregate(today_revenue_pipeline).to_list(1)
+    today_revenue = today_result[0]['total'] if today_result else 0
+    
+    # Total revenue
+    total_revenue_pipeline = [
+        {"$match": {
+            "cafe_id": {"$in": cafe_ids},
+            "status": "COMPLETED"
+        }},
+        {"$group": {
+            "_id": None,
+            "total": {"$sum": "$total_amount"}
+        }}
+    ]
+    
+    total_result = await db.sessions.aggregate(total_revenue_pipeline).to_list(1)
+    total_revenue = total_result[0]['total'] if total_result else 0
     
     return {
         "total_cafes": len(cafes),
