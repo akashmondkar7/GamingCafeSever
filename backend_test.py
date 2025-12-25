@@ -1,382 +1,495 @@
-#!/usr/bin/env python3
-"""
-Comprehensive Backend API Testing for Gaming Café Management System
-Tests all authentication, CRUD operations, AI integration, and analytics endpoints
-"""
-
 import requests
 import sys
 import json
 from datetime import datetime
-from typing import Dict, Any, Optional
 
-class GameCafeAPITester:
+class ComprehensiveAPITester:
     def __init__(self, base_url="https://gamecafe-os.preview.emergentagent.com"):
         self.base_url = base_url
-        self.api_url = f"{base_url}/api"
         self.token = None
-        self.user_data = None
         self.tests_run = 0
         self.tests_passed = 0
-        self.failed_tests = []
-        self.test_results = []
+        self.user_id = None
+        self.cafe_id = None
+        self.device_id = None
+        self.session_id = None
 
-    def log_test(self, name: str, success: bool, details: str = "", response_data: Any = None):
-        """Log test results"""
-        self.tests_run += 1
-        if success:
-            self.tests_passed += 1
-            print(f"✅ {name}")
-        else:
-            print(f"❌ {name} - {details}")
-            self.failed_tests.append({"test": name, "error": details, "response": response_data})
-        
-        self.test_results.append({
-            "test_name": name,
-            "success": success,
-            "details": details,
-            "timestamp": datetime.now().isoformat()
-        })
-
-    def make_request(self, method: str, endpoint: str, data: Optional[Dict] = None, expected_status: int = 200) -> tuple:
-        """Make HTTP request with error handling"""
-        url = f"{self.api_url}/{endpoint}"
-        headers = {'Content-Type': 'application/json'}
-        
+    def run_test(self, name, method, endpoint, expected_status, data=None, headers=None):
+        """Run a single API test"""
+        url = f"{self.base_url}/{endpoint}"
+        test_headers = {'Content-Type': 'application/json'}
         if self.token:
-            headers['Authorization'] = f'Bearer {self.token}'
+            test_headers['Authorization'] = f'Bearer {self.token}'
+        if headers:
+            test_headers.update(headers)
 
+        self.tests_run += 1
+        print(f"\n🔍 Testing {name}...")
+        
         try:
             if method == 'GET':
-                response = requests.get(url, headers=headers, timeout=30)
+                response = requests.get(url, headers=test_headers, timeout=30)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=headers, timeout=30)
+                response = requests.post(url, json=data, headers=test_headers, timeout=30)
             elif method == 'PATCH':
-                response = requests.patch(url, json=data, headers=headers, timeout=30)
+                response = requests.patch(url, json=data, headers=test_headers, timeout=30)
             elif method == 'DELETE':
-                response = requests.delete(url, headers=headers, timeout=30)
-            else:
-                return False, f"Unsupported method: {method}", {}
+                response = requests.delete(url, headers=test_headers, timeout=30)
 
             success = response.status_code == expected_status
-            response_data = {}
-            
-            try:
-                response_data = response.json()
-            except:
-                response_data = {"raw_response": response.text}
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    return success, response.json() if response.content else {}
+                except:
+                    return success, {}
+            else:
+                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
+                try:
+                    error_detail = response.json()
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text[:200]}")
+                return False, {}
 
-            if not success:
-                error_msg = f"Expected {expected_status}, got {response.status_code}"
-                if response_data.get('detail'):
-                    error_msg += f" - {response_data['detail']}"
-                return False, error_msg, response_data
-
-            return True, "Success", response_data
-
-        except requests.exceptions.Timeout:
-            return False, "Request timeout", {}
-        except requests.exceptions.ConnectionError:
-            return False, "Connection error", {}
         except Exception as e:
-            return False, f"Request error: {str(e)}", {}
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
 
     def test_auth_flow(self):
         """Test complete authentication flow"""
-        print("\n🔐 Testing Authentication Flow...")
+        print("\n🔐 TESTING AUTHENTICATION FLOW")
         
-        # Test phone number for OTP
-        test_phone = "+919876543210"
-        
-        # 1. Send OTP
-        success, error, response = self.make_request('POST', 'auth/login', {'phone': test_phone})
-        self.log_test("Send OTP", success, error, response)
-        
+        # Test OTP login
+        success, response = self.run_test(
+            "Send OTP",
+            "POST",
+            "api/auth/login",
+            200,
+            data={"phone": "+919876543210"}
+        )
         if not success:
             return False
-        
-        mock_otp = response.get('mock_otp', '123456')
-        
-        # 2. Verify OTP and login
-        success, error, response = self.make_request('POST', 'auth/verify-otp', {
-            'phone': test_phone,
-            'otp': mock_otp
-        })
-        self.log_test("Verify OTP and Login", success, error, response)
-        
-        if success and response.get('token'):
-            self.token = response['token']
-            self.user_data = response.get('user', {})
-            return True
-        
-        return False
 
-    def test_register_cafe_owner(self):
-        """Test cafe owner registration"""
-        print("\n👤 Testing Cafe Owner Registration...")
-        
-        owner_phone = "+919876543211"
-        
-        # Send OTP for owner
-        success, error, response = self.make_request('POST', 'auth/login', {'phone': owner_phone})
-        self.log_test("Send OTP for Owner", success, error, response)
-        
-        if not success:
-            return False
-        
-        # Register as cafe owner
-        success, error, response = self.make_request('POST', 'auth/register', {
-            'phone': owner_phone,
-            'name': 'Test Cafe Owner',
-            'email': 'owner@test.com',
-            'role': 'CAFE_OWNER'
-        })
-        self.log_test("Register Cafe Owner", success, error, response)
-        
-        if success and response.get('token'):
+        # Test OTP verification
+        success, response = self.run_test(
+            "Verify OTP",
+            "POST", 
+            "api/auth/verify-otp",
+            200,
+            data={"phone": "+919876543210", "otp": "123456"}
+        )
+        if success and 'token' in response:
             self.token = response['token']
-            self.user_data = response.get('user', {})
+            self.user_id = response['user']['id']
+            print(f"   Token obtained: {self.token[:20]}...")
             return True
-        
         return False
 
     def test_cafe_management(self):
-        """Test cafe CRUD operations"""
-        print("\n🏢 Testing Cafe Management...")
+        """Test cafe management endpoints"""
+        print("\n🏢 TESTING CAFE MANAGEMENT")
         
         # Create cafe
-        cafe_data = {
-            'name': 'Test Gaming Cafe',
-            'address': '123 Test Street',
-            'city': 'Test City',
-            'description': 'A test gaming cafe'
-        }
-        
-        success, error, response = self.make_request('POST', 'cafes', cafe_data, 200)
-        self.log_test("Create Cafe", success, error, response)
-        
-        if not success:
-            return False, None
-        
-        cafe_id = response.get('id')
-        
+        success, response = self.run_test(
+            "Create Cafe",
+            "POST",
+            "api/cafes",
+            200,
+            data={
+                "name": "Test Gaming Cafe",
+                "address": "123 Test Street",
+                "city": "Mumbai",
+                "description": "A premium gaming destination"
+            }
+        )
+        if success and 'id' in response:
+            self.cafe_id = response['id']
+            print(f"   Cafe created: {self.cafe_id}")
+
         # List cafes
-        success, error, response = self.make_request('GET', 'cafes')
-        self.log_test("List Cafes", success, error, response)
+        self.run_test("List Cafes", "GET", "api/cafes", 200)
         
         # Get public cafes
-        success, error, response = self.make_request('GET', 'cafes/public')
-        self.log_test("Get Public Cafes", success, error, response)
+        self.run_test("Get Public Cafes", "GET", "api/cafes/public", 200)
         
         # Get specific cafe
-        if cafe_id:
-            success, error, response = self.make_request('GET', f'cafes/{cafe_id}')
-            self.log_test("Get Specific Cafe", success, error, response)
-        
-        return True, cafe_id
+        if self.cafe_id:
+            self.run_test("Get Cafe Details", "GET", f"api/cafes/{self.cafe_id}", 200)
 
-    def test_device_management(self, cafe_id: str):
-        """Test device CRUD operations"""
-        print("\n🎮 Testing Device Management...")
+        return True
+
+    def test_device_management(self):
+        """Test device management endpoints"""
+        print("\n🎮 TESTING DEVICE MANAGEMENT")
         
         # Create device
-        device_data = {
-            'name': 'Gaming PC #1',
-            'device_type': 'PC',
-            'specifications': 'RTX 4080, 32GB RAM, i7-13700K',
-            'hourly_rate': 150.0
-        }
-        
-        success, error, response = self.make_request('POST', 'devices', device_data, 200)
-        self.log_test("Create Device", success, error, response)
-        
-        if not success:
-            return False, None
-        
-        device_id = response.get('id')
-        
+        success, response = self.run_test(
+            "Create Device",
+            "POST",
+            "api/devices",
+            200,
+            data={
+                "name": "Gaming PC #1",
+                "device_type": "PC",
+                "specifications": "RTX 4080, 32GB RAM",
+                "hourly_rate": 150
+            }
+        )
+        if success and 'id' in response:
+            self.device_id = response['id']
+            print(f"   Device created: {self.device_id}")
+
         # List devices
-        success, error, response = self.make_request('GET', 'devices')
-        self.log_test("List Devices", success, error, response)
-        
-        # List devices by cafe
-        if cafe_id:
-            success, error, response = self.make_request('GET', f'devices?cafe_id={cafe_id}')
-            self.log_test("List Devices by Cafe", success, error, response)
+        self.run_test("List Devices", "GET", "api/devices", 200)
         
         # Update device status
-        if device_id:
-            success, error, response = self.make_request('PATCH', f'devices/{device_id}/status', 'MAINTENANCE')
-            self.log_test("Update Device Status", success, error, response)
-        
-        return True, device_id
+        if self.device_id:
+            self.run_test(
+                "Update Device Status",
+                "PATCH",
+                f"api/devices/{self.device_id}/status",
+                200,
+                data={"status": "MAINTENANCE"}
+            )
 
-    def test_session_management(self, device_id: str):
-        """Test session/booking operations"""
-        print("\n⏱️ Testing Session Management...")
+        return True
+
+    def test_session_management(self):
+        """Test session management endpoints"""
+        print("\n⏱️ TESTING SESSION MANAGEMENT")
         
-        if not device_id or not self.user_data:
-            self.log_test("Session Management", False, "Missing device_id or user_data")
-            return False, None
-        
+        if not self.device_id:
+            print("❌ No device available for session testing")
+            return False
+
+        # First set device to available
+        self.run_test(
+            "Set Device Available",
+            "PATCH",
+            f"api/devices/{self.device_id}/status",
+            200,
+            data={"status": "AVAILABLE"}
+        )
+
         # Create session
-        session_data = {
-            'device_id': device_id,
-            'customer_id': self.user_data.get('id')
-        }
-        
-        success, error, response = self.make_request('POST', 'sessions', session_data, 200)
-        self.log_test("Create Session", success, error, response)
-        
-        if not success:
-            return False, None
-        
-        session_id = response.get('id')
-        
+        success, response = self.run_test(
+            "Create Session",
+            "POST",
+            "api/sessions",
+            200,
+            data={
+                "device_id": self.device_id,
+                "customer_id": self.user_id
+            }
+        )
+        if success and 'id' in response:
+            self.session_id = response['id']
+            print(f"   Session created: {self.session_id}")
+
         # List sessions
-        success, error, response = self.make_request('GET', 'sessions')
-        self.log_test("List Sessions", success, error, response)
+        self.run_test("List Sessions", "GET", "api/sessions", 200)
         
         # End session
-        if session_id:
-            success, error, response = self.make_request('POST', f'sessions/{session_id}/end')
-            self.log_test("End Session", success, error, response)
-        
-        return True, session_id
+        if self.session_id:
+            self.run_test(
+                "End Session",
+                "POST",
+                f"api/sessions/{self.session_id}/end",
+                200
+            )
 
-    def test_ai_integration(self):
-        """Test AI agent integration"""
-        print("\n🤖 Testing AI Integration...")
+        return True
+
+    def test_ai_agents(self):
+        """Test all 7 AI agents"""
+        print("\n🤖 TESTING AI AGENTS (ALL 7 TYPES)")
         
-        if not self.user_data or self.user_data.get('role') != 'CAFE_OWNER':
-            self.log_test("AI Integration", False, "User is not a cafe owner")
-            return False
-        
-        # Test AI chat
-        ai_message = {
-            'message': 'How can I improve my cafe revenue?',
-            'agent_type': 'OWNER_ASSISTANT'
-        }
-        
-        success, error, response = self.make_request('POST', 'ai/chat', ai_message)
-        self.log_test("AI Chat - Owner Assistant", success, error, response)
-        
-        # Test different AI agents
         ai_agents = [
-            'SMART_PRICING',
-            'DEVICE_OPTIMIZATION', 
-            'CUSTOMER_BEHAVIOR',
-            'RISK_FRAUD'
+            "OWNER_ASSISTANT",
+            "SMART_PRICING", 
+            "DEVICE_OPTIMIZATION",
+            "CUSTOMER_BEHAVIOR",
+            "RISK_FRAUD"
         ]
         
+        ai_passed = 0
         for agent_type in ai_agents:
-            ai_message['agent_type'] = agent_type
-            ai_message['message'] = f'Analyze my cafe data for {agent_type.lower()}'
-            success, error, response = self.make_request('POST', 'ai/chat', ai_message)
-            self.log_test(f"AI Chat - {agent_type}", success, error, response)
+            success, response = self.run_test(
+                f"AI Agent - {agent_type}",
+                "POST",
+                "api/ai/chat",
+                200,
+                data={
+                    "message": f"Give me insights about {agent_type.lower().replace('_', ' ')}",
+                    "agent_type": agent_type
+                }
+            )
+            if success and 'response' in response:
+                ai_passed += 1
+                print(f"   AI Response: {response['response'][:100]}...")
+
+        # Test extended AI agents
+        success, response = self.run_test(
+            "AI Staff Performance",
+            "POST",
+            "api/ai/staff-performance",
+            200
+        )
+        if success:
+            ai_passed += 1
+
+        success, response = self.run_test(
+            "AI Automation Agent",
+            "POST", 
+            "api/ai/automation",
+            200
+        )
+        if success:
+            ai_passed += 1
+
+        print(f"   AI Agents Working: {ai_passed}/7")
+        return ai_passed >= 5  # At least 5 out of 7 should work
+
+    def test_game_library(self):
+        """Test game library management"""
+        print("\n🎯 TESTING GAME LIBRARY")
+        
+        # Create game
+        success, response = self.run_test(
+            "Create Game",
+            "POST",
+            "api/games",
+            200,
+            data={
+                "name": "Call of Duty: Modern Warfare",
+                "device_types": ["PC"],
+                "genre": "FPS",
+                "description": "Popular first-person shooter",
+                "how_to_start": "Launch from desktop",
+                "controls_guide": "WASD to move, Mouse to aim",
+                "difficulty_level": "MEDIUM",
+                "age_rating": "MATURE"
+            }
+        )
+
+        # List games
+        self.run_test("List Games", "GET", "api/games", 200)
+        
+        # Get game details
+        if success and 'id' in response:
+            game_id = response['id']
+            self.run_test("Get Game Details", "GET", f"api/games/{game_id}", 200)
+
+        return True
+
+    def test_membership_system(self):
+        """Test membership and wallet system"""
+        print("\n👑 TESTING MEMBERSHIP & WALLET SYSTEM")
+        
+        # Get membership
+        self.run_test("Get My Membership", "GET", "api/membership/my", 200)
+        
+        # Add money to wallet
+        self.run_test(
+            "Add Money to Wallet",
+            "POST",
+            "api/wallet/add-money?amount=1000",
+            200
+        )
+        
+        # Get wallet transactions
+        self.run_test("Get Wallet Transactions", "GET", "api/wallet/transactions", 200)
+        
+        # Purchase pass
+        success, response = self.run_test(
+            "Purchase Gaming Pass",
+            "POST",
+            "api/membership/purchase-pass",
+            200,
+            data={
+                "pass_type": "HOURLY",
+                "cafe_id": self.cafe_id or "default"
+            }
+        )
+        
+        # List passes
+        self.run_test("List My Passes", "GET", "api/membership/passes", 200)
+
+        return True
+
+    def test_pricing_and_coupons(self):
+        """Test pricing rules and coupon system"""
+        print("\n💰 TESTING PRICING CONTROLS & COUPONS")
+        
+        # Create pricing rule
+        self.run_test(
+            "Create Pricing Rule",
+            "POST",
+            "api/pricing-rules",
+            200,
+            data={
+                "rule_type": "PEAK",
+                "multiplier": 1.5,
+                "start_time": "18:00",
+                "end_time": "23:00",
+                "days_of_week": [1, 2, 3, 4, 5]
+            }
+        )
+        
+        # List pricing rules
+        self.run_test("List Pricing Rules", "GET", "api/pricing-rules", 200)
+        
+        # Create coupon
+        self.run_test(
+            "Create Coupon",
+            "POST",
+            "api/coupons",
+            200,
+            data={
+                "code": "TESTCOUPON50",
+                "discount_type": "percentage",
+                "discount_value": 50,
+                "min_amount": 100,
+                "max_uses": 10,
+                "valid_days": 30
+            }
+        )
+
+        return True
+
+    def test_staff_management(self):
+        """Test staff panel functionality"""
+        print("\n👥 TESTING STAFF MANAGEMENT")
+        
+        # Start shift
+        self.run_test("Start Staff Shift", "POST", "api/staff/shift/start", 200)
         
         return True
 
-    def test_analytics(self):
-        """Test analytics endpoints"""
-        print("\n📊 Testing Analytics...")
+    def test_analytics_dashboard(self):
+        """Test analytics and dashboard endpoints"""
+        print("\n📊 TESTING ANALYTICS & DASHBOARD")
         
         # Get dashboard analytics
-        success, error, response = self.make_request('GET', 'analytics/dashboard')
-        self.log_test("Dashboard Analytics", success, error, response)
+        self.run_test("Get Dashboard Analytics", "GET", "api/analytics/dashboard", 200)
         
-        return success
+        # Get subscription info
+        self.run_test("Get My Subscription", "GET", "api/subscriptions/my", 200)
 
-    def test_subscription(self):
-        """Test subscription endpoints"""
-        print("\n💳 Testing Subscription...")
-        
-        if not self.user_data or self.user_data.get('role') != 'CAFE_OWNER':
-            self.log_test("Subscription", False, "User is not a cafe owner")
-            return False
-        
-        # Get my subscription
-        success, error, response = self.make_request('GET', 'subscriptions/my')
-        self.log_test("Get My Subscription", success, error, response)
-        
-        return success
+        return True
 
-    def test_user_profile(self):
-        """Test user profile endpoints"""
-        print("\n👤 Testing User Profile...")
+    def test_export_reports(self):
+        """Test export functionality"""
+        print("\n📄 TESTING EXPORT REPORTS")
         
-        # Get current user
-        success, error, response = self.make_request('GET', 'auth/me')
-        self.log_test("Get Current User", success, error, response)
+        # Export sessions report
+        self.run_test("Export Sessions Report", "GET", "api/reports/sessions/export?format=json", 200)
         
-        return success
+        # Export revenue report
+        self.run_test("Export Revenue Report", "GET", "api/reports/revenue/export", 200)
 
-    def run_all_tests(self):
-        """Run complete test suite"""
-        print("🚀 Starting Gaming Café API Test Suite...")
-        print(f"Testing against: {self.base_url}")
-        
-        # Test authentication first
-        if not self.test_register_cafe_owner():
-            print("❌ Authentication failed, stopping tests")
-            return self.generate_report()
-        
-        # Test user profile
-        self.test_user_profile()
-        
-        # Test cafe management
-        cafe_success, cafe_id = self.test_cafe_management()
-        
-        # Test device management
-        device_success, device_id = False, None
-        if cafe_success and cafe_id:
-            device_success, device_id = self.test_device_management(cafe_id)
-        
-        # Test session management
-        if device_success and device_id:
-            self.test_session_management(device_id)
-        
-        # Test AI integration
-        self.test_ai_integration()
-        
-        # Test analytics
-        self.test_analytics()
-        
-        # Test subscription
-        self.test_subscription()
-        
-        return self.generate_report()
+        return True
 
-    def generate_report(self):
-        """Generate test report"""
-        print(f"\n📊 Test Results Summary:")
-        print(f"Tests Run: {self.tests_run}")
-        print(f"Tests Passed: {self.tests_passed}")
-        print(f"Tests Failed: {len(self.failed_tests)}")
-        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%" if self.tests_run > 0 else "0%")
+    def test_automation_features(self):
+        """Test automation features"""
+        print("\n⚡ TESTING AUTOMATION FEATURES")
         
-        if self.failed_tests:
-            print(f"\n❌ Failed Tests:")
-            for test in self.failed_tests:
-                print(f"  - {test['test']}: {test['error']}")
+        # Check no-shows
+        self.run_test("Check No-Shows", "POST", "api/automation/check-noshows", 200)
         
-        # Return results for further processing
-        return {
-            "total_tests": self.tests_run,
-            "passed_tests": self.tests_passed,
-            "failed_tests": len(self.failed_tests),
-            "success_rate": (self.tests_passed/self.tests_run*100) if self.tests_run > 0 else 0,
-            "failed_test_details": self.failed_tests,
-            "all_results": self.test_results
-        }
+        # Check overstay
+        self.run_test("Check Overstay", "POST", "api/automation/check-overstay", 200)
+
+        return True
+
+    def test_qr_and_invoicing(self):
+        """Test QR codes and invoicing"""
+        print("\n📱 TESTING QR CODES & INVOICING")
+        
+        if self.session_id:
+            # Generate QR code
+            self.run_test("Generate Session QR", "GET", f"api/sessions/{self.session_id}/qr", 200)
+            
+            # Generate invoice
+            self.run_test("Generate Invoice", "POST", f"api/invoices/generate?session_id={self.session_id}", 200)
+        
+        # Get my invoices
+        self.run_test("Get My Invoices", "GET", "api/invoices/my", 200)
+
+        return True
+
+    def test_referral_system(self):
+        """Test referral system"""
+        print("\n🎁 TESTING REFERRAL SYSTEM")
+        
+        # Apply referral code (will fail if code doesn't exist, but tests endpoint)
+        success, response = self.run_test(
+            "Apply Referral Code",
+            "POST",
+            "api/referrals/apply?referral_code=TESTREF123",
+            404  # Expected to fail with test code
+        )
+
+        return True
+
+    def test_franchise_dashboard(self):
+        """Test franchise overview"""
+        print("\n🏪 TESTING FRANCHISE DASHBOARD")
+        
+        # Get franchise overview
+        self.run_test("Get Franchise Overview", "GET", "api/franchise/overview", 200)
+
+        return True
 
 def main():
-    """Main test execution"""
-    tester = GameCafeAPITester()
-    results = tester.run_all_tests()
+    print("🚀 STARTING COMPREHENSIVE GAMING CAFÉ API TESTING")
+    print("=" * 60)
     
-    # Return appropriate exit code
-    return 0 if results["success_rate"] > 80 else 1
+    tester = ComprehensiveAPITester()
+    
+    # Test authentication first
+    if not tester.test_auth_flow():
+        print("❌ Authentication failed, stopping tests")
+        return 1
+
+    # Run all test suites
+    test_suites = [
+        tester.test_cafe_management,
+        tester.test_device_management, 
+        tester.test_session_management,
+        tester.test_ai_agents,
+        tester.test_game_library,
+        tester.test_membership_system,
+        tester.test_pricing_and_coupons,
+        tester.test_staff_management,
+        tester.test_analytics_dashboard,
+        tester.test_export_reports,
+        tester.test_automation_features,
+        tester.test_qr_and_invoicing,
+        tester.test_referral_system,
+        tester.test_franchise_dashboard
+    ]
+    
+    for test_suite in test_suites:
+        try:
+            test_suite()
+        except Exception as e:
+            print(f"❌ Test suite failed: {str(e)}")
+
+    # Print final results
+    print("\n" + "=" * 60)
+    print(f"📊 FINAL RESULTS")
+    print(f"Tests passed: {tester.tests_passed}/{tester.tests_run}")
+    print(f"Success rate: {(tester.tests_passed/tester.tests_run*100):.1f}%")
+    
+    if tester.tests_passed >= tester.tests_run * 0.8:
+        print("🎉 COMPREHENSIVE TESTING COMPLETED SUCCESSFULLY!")
+        return 0
+    else:
+        print("⚠️  Some tests failed - check logs above")
+        return 1
 
 if __name__ == "__main__":
     sys.exit(main())
