@@ -362,7 +362,7 @@ def create_extended_routes(db, api_router):
     async def ai_staff_performance(current_user: dict = Depends(get_current_user)):
         """Get staff performance insights"""
         if current_user['role'] != 'CAFE_OWNER':
-            raise HTTPException(status_code=403, detail=\"Only cafe owners can access this\")
+            raise HTTPException(status_code=403, detail="Only cafe owners can access this")
         
         # Mock context for demo
         context = {
@@ -373,16 +373,16 @@ def create_extended_routes(db, api_router):
             'training_completion': 70
         }
         
-        session_id = f\"{current_user['user_id']}_staff_perf\"
+        session_id = f"{current_user['user_id']}_staff_perf"
         response = await extended_ai_agents.staff_performance(context, session_id)
         
-        return {\"response\": response, \"context\": context}
+        return {"response": response, "context": context}
     
-    @api_router.post(\"/ai/automation\")
+    @api_router.post("/ai/automation")
     async def ai_automation(current_user: dict = Depends(get_current_user)):
-        \"\"\"Get automation recommendations\"\"\"
+        """Get automation recommendations"""
         if current_user['role'] != 'CAFE_OWNER':
-            raise HTTPException(status_code=403, detail=\"Only cafe owners can access this\")
+            raise HTTPException(status_code=403, detail="Only cafe owners can access this")
         
         # Mock context for demo
         context = {
