@@ -392,18 +392,18 @@ def create_extended_routes(db, api_router):
             'wait_time': 8
         }
         
-        session_id = f\"{current_user['user_id']}_automation\"
+        session_id = f"{current_user['user_id']}_automation"
         response = await extended_ai_agents.automation_agent(context, session_id)
         
-        return {\"response\": response, \"context\": context}
+        return {"response": response, "context": context}
     
     # ==================== STAFF MANAGEMENT ====================
     
-    @api_router.post(\"/staff/shift/start\")
+    @api_router.post("/staff/shift/start")
     async def start_shift(current_user: dict = Depends(get_current_user)):
-        \"\"\"Start staff shift\"\"\"
+        """Start staff shift"""
         if current_user['role'] != 'STAFF':
-            raise HTTPException(status_code=403, detail=\"Only staff can start shifts\")
+            raise HTTPException(status_code=403, detail="Only staff can start shifts")
         
         user_doc = await db.users.find_one({\"id\": current_user['user_id']}, {\"_id\": 0})
         if not user_doc.get('cafe_id'):
