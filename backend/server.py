@@ -12,6 +12,7 @@ import razorpay
 from models import *
 from auth import *
 from ai_agents import ai_orchestrator
+from routes_extended import create_extended_routes
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
