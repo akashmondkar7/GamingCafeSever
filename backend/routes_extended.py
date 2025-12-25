@@ -427,20 +427,20 @@ def create_extended_routes(db, api_router):
         """End staff shift"""
         shift_doc = await db.staff_shifts.find_one({"id": shift_id}, {"_id": 0})
         if not shift_doc:
-            raise HTTPException(status_code=404, detail=\"Shift not found\")
+            raise HTTPException(status_code=404, detail="Shift not found")
         
         shift_start = datetime.fromisoformat(shift_doc['shift_start'])
         shift_end = datetime.now(timezone.utc)
         total_hours = (shift_end - shift_start).total_seconds() / 3600
         
         await db.staff_shifts.update_one(
-            {\"id\": shift_id},
-            {\"$set\": {
-                \"shift_end\": shift_end.isoformat(),
-                \"total_hours\": total_hours
+            {"id": shift_id},
+            {"$set": {
+                "shift_end": shift_end.isoformat(),
+                "total_hours": total_hours
             }}
         )
         
-        return {\"message\": \"Shift ended\", \"total_hours\": round(total_hours, 2)}
+        return {"message": "Shift ended", "total_hours": round(total_hours, 2)}
     
     return api_router
