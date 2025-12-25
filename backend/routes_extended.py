@@ -337,10 +337,10 @@ def create_extended_routes(db, api_router):
     
     # ==================== QR CODE GENERATION ====================
     
-    @api_router.get(\"/sessions/{session_id}/qr\")
+    @api_router.get("/sessions/{session_id}/qr")
     async def get_session_qr(session_id: str, current_user: dict = Depends(get_current_user)):
-        \"\"\"Generate QR code for session check-in\"\"\"
-        session_doc = await db.sessions.find_one({\"id\": session_id}, {\"_id\": 0})
+        """Generate QR code for session check-in"""
+        session_doc = await db.sessions.find_one({"id": session_id}, {"_id": 0})
         if not session_doc:
             raise HTTPException(status_code=404, detail=\"Session not found\")
         
