@@ -216,7 +216,7 @@ async def list_devices(cafe_id: Optional[str] = None, current_user: dict = Depen
         query = {"cafe_id": cafe_id}
     elif current_user['role'] == 'CAFE_OWNER':
         # Get owner's cafes
-        cafes = await db.cafes.find({"owner_id": current_user['user_id']}, {"_id": 0}).to_list(100)
+        cafes = await db.cafes.find({"owner_id": current_user['user_id']}, {"_id": 0, "id": 1}).limit(100).to_list(100)
         cafe_ids = [c['id'] for c in cafes]
         query = {"cafe_id": {"$in": cafe_ids}}
     elif current_user['role'] == 'STAFF':
@@ -224,7 +224,7 @@ async def list_devices(cafe_id: Optional[str] = None, current_user: dict = Depen
         if user_doc and user_doc.get('cafe_id'):
             query = {"cafe_id": user_doc['cafe_id']}
     
-    devices = await db.devices.find(query, {"_id": 0}).to_list(1000)
+    devices = await db.devices.find(query, {"_id": 0}).limit(100).to_list(100)
     
     for device in devices:
         if isinstance(device['created_at'], str):
