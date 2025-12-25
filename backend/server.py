@@ -523,14 +523,14 @@ async def get_my_subscription(current_user: dict = Depends(get_current_user)):
     
     return Subscription(**sub_doc)
 
-# Include the router in the main app
-app.include_router(api_router)
-
 # Add extended routes
 create_extended_routes(db, api_router)
 
 # Add advanced routes
 create_advanced_routes(db, api_router)
+
+# Include the router in the main app
+app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
