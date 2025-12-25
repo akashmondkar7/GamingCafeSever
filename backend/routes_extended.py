@@ -342,19 +342,19 @@ def create_extended_routes(db, api_router):
         """Generate QR code for session check-in"""
         session_doc = await db.sessions.find_one({"id": session_id}, {"_id": 0})
         if not session_doc:
-            raise HTTPException(status_code=404, detail=\"Session not found\")
+            raise HTTPException(status_code=404, detail="Session not found")
         
         # Generate QR code
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(f\"SESSION:{session_id}\")
+        qr.add_data(f"SESSION:{session_id}")
         qr.make(fit=True)
         
-        img = qr.make_image(fill_color=\"black\", back_color=\"white\")
+        img = qr.make_image(fill_color="black", back_color="white")
         buffer = io.BytesIO()
         img.save(buffer, format='PNG')
         img_str = base64.b64encode(buffer.getvalue()).decode()
         
-        return {\"qr_code\": f\"data:image/png;base64,{img_str}\", \"session_id\": session_id}
+        return {"qr_code": f"data:image/png;base64,{img_str}", "session_id": session_id}
     
     # ==================== EXTENDED AI AGENTS ====================
     
