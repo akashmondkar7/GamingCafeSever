@@ -2,6 +2,12 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage
 import os
 from typing import Dict, Optional
 from datetime import datetime, timezone
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Load environment variables
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
 
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
 
@@ -10,6 +16,8 @@ class AIAgentOrchestrator:
     
     def __init__(self):
         self.api_key = EMERGENT_LLM_KEY
+        if not self.api_key:
+            raise ValueError("EMERGENT_LLM_KEY not found in environment variables")
     
     async def owner_assistant(self, message: str, context: Dict, session_id: str) -> str:
         """AI Agent 1: Owner Assistant - Conversational AI for cafe owners"""
