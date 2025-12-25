@@ -329,11 +329,11 @@ def create_extended_routes(db, api_router):
         additional_cost = request.additional_hours * device_doc['hourly_rate']
         
         await db.sessions.update_one(
-            {\"id\": session_id},
-            {\"$set\": {\"status\": \"EXTENDED\"}, \"$inc\": {\"total_amount\": additional_cost}}
+            {"id": session_id},
+            {"$set": {"status": "EXTENDED"}, "$inc": {"total_amount": additional_cost}}
         )
         
-        return {\"message\": \"Session extended\", \"additional_cost\": additional_cost}
+        return {"message": "Session extended", "additional_cost": additional_cost}
     
     # ==================== QR CODE GENERATION ====================
     
