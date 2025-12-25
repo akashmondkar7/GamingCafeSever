@@ -529,6 +529,9 @@ app.include_router(api_router)
 # Add extended routes
 create_extended_routes(db, api_router)
 
+# Add advanced routes
+create_advanced_routes(db, api_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
