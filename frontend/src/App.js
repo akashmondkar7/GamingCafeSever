@@ -5,6 +5,10 @@ import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { OwnerDashboard } from '@/pages/OwnerDashboard';
 import { CustomerPortal } from '@/pages/CustomerPortal';
+import { StaffPanel } from '@/pages/StaffPanel';
+import { SuperAdminDashboard } from '@/pages/SuperAdminDashboard';
+import { GameLibrary } from '@/pages/GameLibrary';
+import { MembershipPage } from '@/pages/MembershipPage';
 import { Toaster } from 'sonner';
 import '@/App.css';
 
