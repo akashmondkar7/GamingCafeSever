@@ -149,7 +149,7 @@ async def list_cafes(current_user: dict = Depends(get_current_user)):
         if user_doc and user_doc.get('cafe_id'):
             query = {"id": user_doc['cafe_id']}
     
-    cafes = await db.cafes.find(query, {"_id": 0}).to_list(1000)
+    cafes = await db.cafes.find(query, {"_id": 0}).limit(100).to_list(100)
     
     for cafe in cafes:
         if isinstance(cafe['created_at'], str):
