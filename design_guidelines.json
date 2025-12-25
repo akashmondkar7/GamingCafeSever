@@ -1,0 +1,156 @@
+{
+  "identity": {
+    "name": "E1: The Anti-AI Designer",
+    "mission": "Create a 'Cyber-Enterprise' aesthetic that blends the high-energy visual language of gaming with the precision and trust of enterprise SaaS. Avoid generic 'gamer' tropes (RGB everywhere) and 'boring SaaS' (flat blue/grey).",
+    "principles": [
+      "Fusion: Cyberpunk x Swiss Enterprise",
+      "Emotion: Empowering, Efficient, High-Tech",
+      "Content: Data is the art (Control Room vibe)",
+      "Contrast: Deep void backgrounds vs. Neon signal lights"
+    ]
+  },
+  "typography": {
+    "fonts": {
+      "headings": {
+        "family": "Chakra Petch, sans-serif",
+        "weights": ["600", "700"],
+        "usage": "All H1-H3, Hero text, Feature titles. Gives a square, tech-forward, 'HUD' feel."
+      },
+      "body": {
+        "family": "Inter, sans-serif",
+        "weights": ["400", "500"],
+        "usage": "Paragraphs, UI labels, long-form text. Optimized for readability."
+      },
+      "mono": {
+        "family": "JetBrains Mono, monospace",
+        "weights": ["400"],
+        "usage": "Data tables, IP addresses, Timers, Pricing numbers, Code snippets."
+      }
+    },
+    "scale": {
+      "h1": "text-5xl md:text-7xl font-bold tracking-tight leading-none",
+      "h2": "text-3xl md:text-5xl font-bold tracking-tight",
+      "h3": "text-2xl font-semibold tracking-normal",
+      "body-lg": "text-lg leading-relaxed text-zinc-300",
+      "body": "text-base leading-relaxed text-zinc-400",
+      "caption": "text-xs uppercase tracking-widest text-zinc-500 font-mono"
+    }
+  },
+  "colors": {
+    "palette": {
+      "background": {
+        "default": "#09090b",
+        "surface": "#18181b",
+        "overlay": "rgba(9, 9, 11, 0.8)"
+      },
+      "primary": {
+        "default": "#7c3aed",
+        "hover": "#6d28d9",
+        "foreground": "#ffffff",
+        "glow": "0 0 20px -5px rgba(124, 58, 237, 0.5)"
+      },
+      "secondary": {
+        "default": "#06b6d4",
+        "foreground": "#ffffff"
+      },
+      "accent": {
+        "success": "#10b981",
+        "warning": "#f59e0b",
+        "error": "#ef4444",
+        "info": "#3b82f6"
+      },
+      "border": {
+        "default": "rgba(255, 255, 255, 0.1)",
+        "active": "rgba(124, 58, 237, 0.5)"
+      }
+    },
+    "usage_rules": [
+      "NEVER use pure black (#000000). Use #09090b (Zinc 950).",
+      "Use 'Cyber-Violet' (#7c3aed) for primary CTAs and brand moments.",
+      "Use 'Data-Cyan' (#06b6d4) for secondary actions and data visualization.",
+      "Borders should be subtle (white/10) unless active/focused.",
+      "Gradients should be used sparingly as 'glows' or 'mesh' backgrounds, not for buttons."
+    ]
+  },
+  "layout": {
+    "spacing": {
+      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+      "section": "py-24 md:py-32",
+      "card_padding": "p-6 md:p-8"
+    },
+    "grids": {
+      "marketing": "grid grid-cols-1 md:grid-cols-12 gap-8 (The 'Tetris' Grid)",
+      "dashboard": "grid grid-cols-1 md:grid-cols-4 gap-4 (The 'Control Room' Grid)"
+    },
+    "strategies": [
+      "Marketing: Use asymmetry. 8-col hero text vs 4-col image. Overlap elements.",
+      "Dashboard: Dense, information-rich. Use borders to separate zones. No wasted space.",
+      "Mobile: Stack everything. Ensure touch targets are 44px+."
+    ]
+  },
+  "components": {
+    "style": {
+      "radius": "rounded-sm",
+      "shadows": "shadow-none (for cards), shadow-lg (for floaters)",
+      "borders": "border border-white/10",
+      "glass": "bg-black/40 backdrop-blur-xl border-white/10"
+    },
+    "overrides": {
+      "Button": "rounded-sm font-medium tracking-wide uppercase text-xs transition-all hover:shadow-[0_0_15px_rgba(124,58,237,0.4)]",
+      "Card": "bg-zinc-900/50 border-white/5 rounded-sm hover:border-white/10 transition-colors",
+      "Input": "bg-zinc-950 border-white/10 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 rounded-sm",
+      "Badge": "rounded-none uppercase tracking-wider font-mono text-[10px]"
+    }
+  },
+  "visual_enhancers": {
+    "textures": [
+      "Noise overlay (opacity 0.03) on backgrounds to kill digital flatness.",
+      "Grid lines (linear-gradient) in background for 'blueprint' feel."
+    ],
+    "motion": {
+      "hover": "transition-all duration-200 ease-out hover:-translate-y-1",
+      "entrance": "animate-in fade-in slide-in-from-bottom-4 duration-500",
+      "glow": "animate-pulse-slow"
+    },
+    "3d_strategy": {
+      "hero": "Use Spline or R3F for a floating 'Gaming Rig' or 'Abstract Node Network' in the hero.",
+      "dashboard": "Use Recharts with custom tooltips (glassmorphism) for data."
+    }
+  },
+  "images": {
+    "hero_bg": {
+      "url": "https://images.pexels.com/photos/7849505/pexels-photo-7849505.jpeg",
+      "alt": "Neon lit gaming cafe interior",
+      "usage": "Hero background with heavy dark overlay (bg-black/80)"
+    },
+    "gamer_focus": {
+      "url": "https://images.unsplash.com/photo-1635343542324-1e0d7ffd89b4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHwzfHxnYW1lciUyMHBsYXlpbmclMjBwYyUyMGNvbXBldGl0aXZlJTIwaGVhZHNldHxlbnwwfHx8fDE3NjY2Njk4OTN8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "Focused gamer with headset",
+      "usage": "Feature section: 'Built for Gamers'"
+    },
+    "vr_experience": {
+      "url": "https://images.pexels.com/photos/7887043/pexels-photo-7887043.jpeg",
+      "alt": "VR headset user",
+      "usage": "Feature section: 'Next Gen Ready'"
+    },
+    "placeholders": {
+      "logo": "https://via.placeholder.com/150x50?text=LOGO",
+      "avatar": "https://via.placeholder.com/100?text=User"
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. INSTALL FONTS: Add 'Chakra Petch' and 'JetBrains Mono' from Google Fonts in index.html or CSS.",
+    "2. CONFIGURE TAILWIND: Update tailwind.config.js with the 'Cyber-Enterprise' colors and font families.",
+    "3. SHADCN OVERRIDES: When installing components, force 'zinc' as base, but manually override radius to 'sm' or 'none' in the code.",
+    "4. DARK MODE: Force dark mode by default. Add 'dark' class to html/body.",
+    "5. DASHBOARD LAYOUT: Build the 'Control Room' layout. Sidebar navigation (collapsed on mobile), Top bar with global search/status, Main content area with dense grids.",
+    "6. AI CHAT: Make the AI assistant a floating panel or a dedicated 'Command Center' view, not just a tiny chat bubble.",
+    "7. BOOKING SYSTEM: Use a visual 'Seat Map' (grid of squares) for booking, not just a dropdown list."
+  ],
+  "universal_guidelines": [
+    "Avoid 'AI Slop': No generic gradients, no centered text blocks without structure.",
+    "Micro-interactions: Every button must have a hover state. Every modal must animate in.",
+    "Data-TestID: Add data-testid to all interactive elements.",
+    "Accessibility: Ensure contrast ratios (Cyber-Violet on Black is tricky, check contrast). Use aria-labels."
+  ]
+}
