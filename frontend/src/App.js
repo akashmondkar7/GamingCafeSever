@@ -84,6 +84,17 @@ function AppContent() {
         />
         
         <Route
+          path="/pricing"
+          element={
+            <ProtectedRoute allowedRoles={['CAFE_OWNER']}>
+              <PricingControlsPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route path="/cafe/:slug" element={<CafeProfilePage />} />
+        
+        <Route
           path="/admin"
           element={
             <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
