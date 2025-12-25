@@ -235,19 +235,19 @@ async def list_devices(cafe_id: Optional[str] = None, current_user: dict = Depen
 @api_router.patch("/devices/{device_id}/status")
 async def update_device_status(
     device_id: str,
-    status: DeviceStatus,
+    status_data: DeviceStatusUpdate,
     current_user: dict = Depends(get_current_user)
 ):
     """Update device status"""
     result = await db.devices.update_one(
         {"id": device_id},
-        {"$set": {"status": status.value}}
+        {"$set": {"status": status_data.status.value}}
     )
     
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Device not found")
     
-    return {"message": "Device status updated", "status": status.value}
+    return {"message": "Device status updated", "status": status_data.status.value}
 
 # ==================== SESSION/BOOKING ROUTES ====================
 
