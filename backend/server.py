@@ -363,31 +363,40 @@ async def ai_chat(message_data: AIMessage, current_user: dict = Depends(get_curr
         raise HTTPException(status_code=403, detail="Only cafe owners can use AI assistant")
     
     # Get cafe context
-    cafes = await db.cafes.find({"owner_id": current_user['user_id']}, {"_id": 0}).to_list(100)
+    cafes = await db.cafes.find({"owner_id": current_user['user_id']}, {"_id": 0, "id": 1}).limit(10).to_list(10)
     if not cafes:
         raise HTTPException(status_code=404, detail="No cafe found")
     
     cafe_id = cafes[0]['id']
     
-    # Gather context data
-    devices = await db.devices.find({"cafe_id": cafe_id}, {"_id": 0}).to_list(1000)
-    sessions = await db.sessions.find({"cafe_id": cafe_id}, {"_id": 0}).to_list(1000)
+    # Gather context data efficiently
+    total_devices = await db.devices.count_documents({"cafe_id": cafe_id})
+    active_sessions_count = await db.sessions.count_documents({"cafe_id": cafe_id, "status": "ACTIVE"})
     
-    active_sessions = [s for s in sessions if s.get('status') == 'ACTIVE']
-    today = datetime.now(timezone.utc).date()
+    # Get today's revenue using aggregation
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     
-    today_revenue = sum(
-        s.get('total_amount', 0) for s in sessions
-        if s.get('status') == 'COMPLETED' and
-        datetime.fromisoformat(s['created_at']).date() == today
-    )
+    revenue_pipeline = [
+        {"$match": {
+            "cafe_id": cafe_id,
+            "status": "COMPLETED",
+            "created_at": {"$gte": today.isoformat()}
+        }},
+        {"$group": {
+            "_id": None,
+            "total": {"$sum": "$total_amount"}
+        }}
+    ]
+    
+    revenue_result = await db.sessions.aggregate(revenue_pipeline).to_list(1)
+    today_revenue = revenue_result[0]['total'] if revenue_result else 0
     
     context = {
-        'total_devices': len(devices),
-        'active_sessions': len(active_sessions),
+        'total_devices': total_devices,
+        'active_sessions': active_sessions_count,
         'today_revenue': today_revenue,
-        'month_revenue': today_revenue * 10,  # Mock
-        'avg_utilization': (len(active_sessions) / len(devices) * 100) if devices else 0
+        'month_revenue': today_revenue * 10,  # Mock for now
+        'avg_utilization': (active_sessions_count / total_devices * 100) if total_devices else 0
     }
     
     # Route to appropriate AI agent
