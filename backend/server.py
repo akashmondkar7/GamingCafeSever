@@ -525,6 +525,9 @@ async def get_my_subscription(current_user: dict = Depends(get_current_user)):
 # Include the router in the main app
 app.include_router(api_router)
 
+# Add extended routes
+create_extended_routes(db, api_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
