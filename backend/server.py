@@ -523,6 +523,20 @@ async def get_my_subscription(current_user: dict = Depends(get_current_user)):
     
     return Subscription(**sub_doc)
 
+@api_router.get("/subscriptions/check-access")
+async def check_subscription_access(feature: str, current_user: dict = Depends(get_current_user)):
+    """Check if user has access to a feature"""
+    from subscription_middleware import check_feature_access, check_subscription_status
+    
+    has_active = await check_subscription_status(db, current_user['user_id'])
+    has_feature = await check_feature_access(db, current_user['user_id'], feature)
+    
+    return {
+        "has_active_subscription": has_active,
+        "has_feature_access": has_feature,
+        "feature": feature
+    }
+
 # Add extended routes
 create_extended_routes(db, api_router)
 
