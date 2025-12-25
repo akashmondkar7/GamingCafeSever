@@ -9,6 +9,8 @@ import { StaffPanel } from '@/pages/StaffPanel';
 import { SuperAdminDashboard } from '@/pages/SuperAdminDashboard';
 import { GameLibrary } from '@/pages/GameLibrary';
 import { MembershipPage } from '@/pages/MembershipPage';
+import { CafeProfilePage } from '@/pages/CafeProfilePage';
+import { PricingControlsPage } from '@/pages/PricingControlsPage';
 import { Toaster } from 'sonner';
 import '@/App.css';
 
