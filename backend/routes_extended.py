@@ -319,13 +319,13 @@ def create_extended_routes(db, api_router):
         """Extend gaming session"""
         session_doc = await db.sessions.find_one({"id": session_id}, {"_id": 0})
         if not session_doc:
-            raise HTTPException(status_code=404, detail=\"Session not found\")
+            raise HTTPException(status_code=404, detail="Session not found")
         
         if session_doc['status'] != 'ACTIVE':
-            raise HTTPException(status_code=400, detail=\"Can only extend active sessions\")
+            raise HTTPException(status_code=400, detail="Can only extend active sessions")
         
         # Get device rate
-        device_doc = await db.devices.find_one({\"id\": session_doc['device_id']}, {\"_id\": 0})
+        device_doc = await db.devices.find_one({"id": session_doc['device_id']}, {"_id": 0})
         additional_cost = request.additional_hours * device_doc['hourly_rate']
         
         await db.sessions.update_one(
