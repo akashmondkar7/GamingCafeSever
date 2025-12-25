@@ -405,9 +405,9 @@ def create_extended_routes(db, api_router):
         if current_user['role'] != 'STAFF':
             raise HTTPException(status_code=403, detail="Only staff can start shifts")
         
-        user_doc = await db.users.find_one({\"id\": current_user['user_id']}, {\"_id\": 0})
+        user_doc = await db.users.find_one({"id": current_user['user_id']}, {"_id": 0})
         if not user_doc.get('cafe_id'):
-            raise HTTPException(status_code=400, detail=\"Staff not assigned to cafe\")
+            raise HTTPException(status_code=400, detail="Staff not assigned to cafe")
         
         shift = StaffShift(
             staff_id=current_user['user_id'],
