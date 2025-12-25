@@ -164,3 +164,6 @@ class SessionCreate(BaseModel):
 class AIMessage(BaseModel):
     message: str
     agent_type: str = "OWNER_ASSISTANT"
+
+class DeviceStatusUpdate(BaseModel):
+    status: DeviceStatus
