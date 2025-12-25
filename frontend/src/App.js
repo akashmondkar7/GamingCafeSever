@@ -64,15 +64,28 @@ function AppContent() {
         />
         
         <Route
+          path="/membership"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <MembershipPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/games"
+          element={
+            <ProtectedRoute>
+              <GameLibrary />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
           path="/admin"
           element={
             <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
-              <div className="min-h-screen bg-background flex items-center justify-center">
-                <div className="text-center">
-                  <h1 className="text-4xl font-heading font-bold text-primary mb-4">Super Admin Dashboard</h1>
-                  <p className="text-zinc-400">Coming soon...</p>
-                </div>
-              </div>
+              <SuperAdminDashboard />
             </ProtectedRoute>
           }
         />
@@ -81,12 +94,7 @@ function AppContent() {
           path="/staff"
           element={
             <ProtectedRoute allowedRoles={['STAFF']}>
-              <div className="min-h-screen bg-background flex items-center justify-center">
-                <div className="text-center">
-                  <h1 className="text-4xl font-heading font-bold text-primary mb-4">Staff Panel</h1>
-                  <p className="text-zinc-400">Coming soon...</p>
-                </div>
-              </div>
+              <StaffPanel />
             </ProtectedRoute>
           }
         />
