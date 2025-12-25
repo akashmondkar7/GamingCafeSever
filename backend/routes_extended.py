@@ -358,9 +358,9 @@ def create_extended_routes(db, api_router):
     
     # ==================== EXTENDED AI AGENTS ====================
     
-    @api_router.post(\"/ai/staff-performance\")
+    @api_router.post("/ai/staff-performance")
     async def ai_staff_performance(current_user: dict = Depends(get_current_user)):
-        \"\"\"Get staff performance insights\"\"\"
+        """Get staff performance insights"""
         if current_user['role'] != 'CAFE_OWNER':
             raise HTTPException(status_code=403, detail=\"Only cafe owners can access this\")
         
